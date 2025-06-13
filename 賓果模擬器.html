@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>賓果模擬器</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 5px;
+      color: white;
+      background-color: #555;
+    }
+    .lit {
+      background-color: #f39c12;
+    }
+    .turned-on {
+      color: red;
+    }
+    .turned-off {
+      color: blue;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    .info {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    @media (max-width: 600px) {
+      #board {
+        grid-template-columns: repeat(5, 40px);
+        grid-gap: 4px;
+      }
+      .cell {
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>賓果模擬器</h1>
+  <div id="board"></div>
+  <div class="info">
+    點亮格數：<span id="litCount">0</span><br />
+    連線數量：<span id="lineCount">0</span>
+  </div>
+  <button onclick="useTool()">使用道具</button>
+  <button onclick="resetBoard()">重設面板</button>
+
+  <script>
+    const boardSize = 5;
+    let board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+    let prevBoard = JSON.parse(JSON.stringify(board));
+
+    const boardDiv = document.getElementById("board");
+    const litCountSpan = document.getElementById("litCount");
+    const lineCountSpan = document.getElementById("lineCount");
+
+    function updateDisplay() {
+      boardDiv.innerHTML = "";
+      let litCount = 0;
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const value = board[i][j];
+          cell.textContent = value;
+          if (value === 1) litCount++;
+
+          if (value === 1) {
+            cell.classList.add("lit");
+          }
+
+          if (prevBoard[i][j] === 0 && board[i][j] === 1) {
+            cell.classList.add("turned-on");
+          } else if (prevBoard[i][j] === 1 && board[i][j] === 0) {
+            cell.classList.add("turned-off");
+          }
+
+          boardDiv.appendChild(cell);
+        }
+      }
+      litCountSpan.textContent = litCount;
+      lineCountSpan.textContent = countLines(board);
+      prevBoard = JSON.parse(JSON.stringify(board));
+    }
+
+    function useTool() {
+      const newBoard = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          newBoard[i][j] = Math.random() < 0.6 ? 1 : 0;
+        }
+      }
+      board = newBoard;
+      updateDisplay();
+    }
+
+    function resetBoard() {
+      board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+      prevBoard = JSON.parse(JSON.stringify(board));
+      updateDisplay();
+    }
+
+    function countLines(b) {
+      let lines = 0;
+      for (let i = 0; i < boardSize; i++) {
+        if (b[i].every(v => v === 1)) lines++;
+        if (b.map(row => row[i]).every(v => v === 1)) lines++;
+      }
+      if (b.every((row, i) => row[i] === 1)) lines++;
+      if (b.every((row, i) => row[boardSize - i - 1] === 1)) lines++;
+      return lines;
+    }
+
+    // 初始顯示
+    updateDisplay();
+  </script>
+</body>
+</html>
